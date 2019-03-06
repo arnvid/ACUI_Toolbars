@@ -1,0 +1,207 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+	<Script file="ACUI_ActionBar.lua"/>
+	
+	<Button name="ACUI_DragButtonTemplate" virtual="true" movable="true" frameStrata="DIALOG" toplevel="true">
+		<Scripts>
+			<OnMouseDown>this:StartMoving()</OnMouseDown>
+			<OnMouseUp>this:StopMovingOrSizing()</OnMouseUp>
+		</Scripts>
+		<Size>
+			<AbsDimension x="15" y="15"/>
+		</Size>
+		<NormalTexture file="Interface\AddOns\ACUI_Toolbars\ACUI_ModDragTab"/>
+		<Layers>
+			<Layer level="OVERLAY">
+				<FontString name="$parentText" inherits="NumberFontNormalSmall">
+					<Anchors>
+						<Anchor point="CENTER">
+							<Offset><AbsDimension x="0" y="0"/></Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+	</Button>
+
+	<Frame name="ACUI_ToolbarTemplate" virtual="true" frameStrata="BACKGROUND" visible="false" parent="UIParent" toplevel="true">
+		<TitleRegion setAllPoints="true"/>
+		<Size><AbsDimension x="36" y="36"/></Size>
+		<Scripts>
+			<OnLoad>
+				this:RegisterEvent("VARIABLES_LOADED");
+				ACUI_LinkFrameToDragButton(this:GetName().."DragButton", this:GetName(), "RIGHT");
+			</OnLoad>
+		</Scripts>
+	</Frame>
+		
+	<Frame name="ACUI_ActionBarTemplate" inherits="ACUI_ToolbarTemplate" virtual="true" parent="UIParent" toplevel="true">
+		<Scripts>
+			<OnLoad>
+				this:RegisterEvent("PLAYER_ENTERING_WORLD");
+		
+				ACUI_LinkFrameToDragButton(this:GetName().."DragButton", this:GetName(), "RIGHT");
+				if (getglobal(this:GetName().."Orientation") == nil) then
+					setglobal(this:GetName().."Orientation", {});
+				end
+				RegisterForSave(this:GetName().."Orientation");
+			</OnLoad>
+			<OnEvent>ACUI_ActionBarOnEvent(event);</OnEvent>
+		</Scripts>
+	</Frame>
+	
+	<Button name="ACUI_GreenButtonsToggle" parent="UIParent" visible="false">
+		<Size><AbsDimension x="10" y="10"/></Size>
+		<HighlightTexture file="Interface\AddOns\ACUI_Toolbars\ACUI_GreenButtonsHighlight"/>
+		<Scripts>
+			<OnLoad>
+				this:RegisterEvent("PLAYER_ENTERING_WORLD");
+				if(not GreenButtonsDisabled) then
+					GreenButtonsDisabled = {};
+				end
+			</OnLoad>
+			<OnEvent>
+				if (event == "PLAYER_ENTERING_WORLD") then
+					if(this.unit_name_updated or UnitName("player") == "Unknown Entity") then
+						return;
+					end
+					this.unit_name_updated = true;
+					
+					UpdateACUI_GreenButtons();
+					UpdateACUI_GreenButtonsToggle();
+				end
+			</OnEvent>
+			<OnClick>
+				if(GreenButtonsDisabled[UnitName("player")]) then
+					GreenButtonsDisabled[UnitName("player")] = false;
+				else
+					GreenButtonsDisabled[UnitName("player")] = true;
+				end
+				UpdateACUI_GreenButtons();
+				UpdateACUI_GreenButtonsToggle();
+				GameTooltip:Hide();
+			</OnClick>
+			<OnEnter>
+				GameTooltip:SetOwner(ACUI_GreenButtonsToggle, "ANCHOR_LEFT");
+				if(GreenButtonsDisabled[UnitName("player")]) then
+					GameTooltip:SetText(HIGHLIGHT_FONT_COLOR_CODE.."Show Green Drag Buttons");
+				else
+					GameTooltip:SetText(HIGHLIGHT_FONT_COLOR_CODE.."Hide Green Drag Buttons");
+				end
+			</OnEnter>
+			<OnLeave>
+				GameTooltip:Hide();
+			</OnLeave>
+		</Scripts>
+	</Button>
+	
+
+	
+	<Button name="ACUI_PetBarDragButton" inherits="ACUI_DragButtonTemplate" parent="PetActionBarFrame">
+		<Anchors>
+			<Anchor point="BOTTOM" relativeTo="UIParent">
+				<Offset><AbsDimension x="-180" y="294"/></Offset>
+			</Anchor>
+		</Anchors>	
+		<Frames>
+			<Frame name="ACUI_PetBar"  frameStrata="BACKGROUND" parent="PetActionBarFrame">
+				<Size><AbsDimension x="330" y="33"/></Size>
+				<Layers>
+					<Layer>
+						<Texture><Color r="0.0" g="0.0" b="0.0" a="0"/></Texture>
+					</Layer>
+				</Layers>
+				<Scripts><OnLoad>ConstructACUI_PetBar()</OnLoad></Scripts>
+			</Frame>		
+		</Frames>
+		<Scripts><OnLoad>ACUI_LinkFrameToDragButton(this:GetName(), "ACUI_PetBar", "RIGHT")</OnLoad></Scripts>
+	</Button>
+	
+	<Button name="ACUI_ShapeshiftBarDragButton" inherits="ACUI_DragButtonTemplate" parent="ShapeshiftButton1">
+		<Anchors>
+			<Anchor point="BOTTOM" relativeTo="UIParent">
+				<Offset><AbsDimension x="-180" y="300"/></Offset>
+			</Anchor>
+		</Anchors>	
+		<Frames>
+			<Frame name="ACUI_ShapeshiftBar" frameStrata="BACKGROUND" parent="ShapeshiftButton1">
+				<Size><AbsDimension x="115" y="39"/></Size>
+				<Layers>
+					<Layer>
+						<Texture><Color r="0.0" g="0.0" b="0.0" a="0"/></Texture>
+					</Layer>
+				</Layers>
+				<Scripts><OnLoad>ConstructACUI_ShapeshiftBar()</OnLoad></Scripts>
+			</Frame>		
+		</Frames>
+		<Scripts><OnLoad>ACUI_LinkFrameToDragButton(this:GetName(), "ACUI_ShapeshiftBar", "RIGHT")</OnLoad></Scripts>
+	</Button>
+
+	<Button name="ACUI_ActionBarMicroDragButton" inherits="ACUI_DragButtonTemplate" parent="UIParent">
+		<Anchors>
+			<Anchor point="BOTTOM">
+				<Offset><AbsDimension x="300" y="20"/></Offset>
+			</Anchor>
+		</Anchors>
+		<Frames>
+			<Frame name="ACUI_ActionBarMicro" inherits="ACUI_ToolbarTemplate" frameStrata="BACKGROUND" parent="UIParent">
+				<Size><AbsDimension x="282" y="40"/></Size>
+				<Layers>
+					<Layer>
+						<Texture><Color r="0.0" g="0.0" b="0.0" a="0"/></Texture>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEvent>
+						ConstructACUI_MicroBar();
+					</OnEvent>
+				</Scripts>
+			</Frame>	
+		</Frames>
+		
+		
+		
+	</Button>
+		
+	<Button name="ACUI_BagBarDragButton" inherits="ACUI_DragButtonTemplate" parent="UIParent">
+		<Scripts><OnLoad>ACUI_LinkFrameToDragButton(this:GetName(), "ACUI_BagBar", "RIGHT")</OnLoad></Scripts>
+		<Anchors>
+			<Anchor point="BOTTOM">
+				<Offset><AbsDimension x="300" y="60"/></Offset>
+			</Anchor>
+		</Anchors>	
+		<Frames>
+			<Frame name="ACUI_BagBar" inherits="ACUI_ToolbarTemplate">
+				<Scripts>
+					<OnEvent>
+						ConstructACUI_BagBar();
+					</OnEvent>
+				</Scripts>
+			</Frame>
+		</Frames>
+	</Button>
+	
+	
+	<Frame name="ACUI_ActionBarManagement">
+		<Scripts>
+			 <OnLoad>
+				this:RegisterEvent("VARIABLES_LOADED");
+				this:RegisterEvent("PLAYER_ENTERING_WORLD");
+				this:RegisterEvent("ACTIONBAR_SHOWGRID");
+				this:RegisterEvent("ACTIONBAR_HIDEGRID");
+			 </OnLoad>
+			 <OnEvent>
+				if (event == "VARIABLES_LOADED") then
+					RemoveMainActionBar();
+				else
+					this.RedrawActionBars = true;
+				end
+			</OnEvent>
+			<OnUpdate>
+				if (this.RedrawActionBars) then
+					this.RedrawActionBars = false;
+				end
+			</OnUpdate>
+		</Scripts>
+	</Frame>
+</Ui>
